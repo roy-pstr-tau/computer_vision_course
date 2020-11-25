@@ -36,7 +36,6 @@ match_p_src = matches['match_p_src'].astype(float)
 
 # Compute naive homography
 tt = time.time()
-print(img_src.shape)
 H_naive = compute_homography_naive(match_p_src, match_p_dst)
 print('Naive Homography {:5.4f} sec'.format(toc(tt)))
 print(H_naive)
