@@ -38,10 +38,12 @@ def compute_homography(mp_src, mp_dst, inliers_percent, max_err):
 
 
 def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err):
+    H_ransac = compute_homography(mp_src, mp_dst, inliers_percent, max_err)
+    show_panorama_image(H_ransac, img_src, img_dst)
     print('panorama')
 
 
-def show_panorama_image(H, img_src, img_dst, ):
+def show_panorama_image(H, img_src, img_dst):
     p11, p12, p13, p14 = np.matmul(H, [0, 0, 1]), np.matmul(H, [img_src.shape[1] - 1, 0, 1]), np.matmul(
         H, [0, img_src.shape[0] - 1, 1]), np.matmul(H, [img_src.shape[1] - 1, img_src.shape[0] - 1, 1])
     p21, p22, p23, p24 = [0, 0], [img_dst.shape[1] - 1, 0], [0, img_dst.shape[0] - 1], [img_dst.shape[1] - 1,
