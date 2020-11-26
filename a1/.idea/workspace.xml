@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76da6c0d-4c43-4ced-a344-806dda0c68de" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ex1_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_script.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,8 +17,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ex1_functions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="45">
-              <caret line="73" column="14" lean-forward="true" selection-start-line="73" selection-start-column="14" selection-end-line="73" selection-end-column="14" />
+            <state relative-caret-position="-157">
+              <caret line="114" column="35" selection-start-line="114" selection-start-column="35" selection-end-line="114" selection-end-column="35" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -169,12 +171,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1295" height="695" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.37648928" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11993646" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Version Control" />
-      <window_info active="true" anchor="bottom" id="Python Console" visible="true" weight="0.7819149" />
+      <window_info active="true" anchor="bottom" id="Python Console" visible="true" weight="0.21631205" />
       <window_info anchor="bottom" id="Terminal" weight="0.32936078" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -202,30 +205,30 @@
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="1222" height="466" key="DebuggerActiveHint/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1605954449509" />
-    <state width="2539" height="391" key="GridCell.Tab.0.bottom" timestamp="1606321423038">
+    <state width="2539" height="391" key="GridCell.Tab.0.bottom" timestamp="1606333817973">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="401" key="GridCell.Tab.0.bottom/-1600.351.1600.860/2560.357.1280.680/0.0.2560.1400@0.0.2560.1400" timestamp="1605887256052" />
     <state width="1259" height="282" key="GridCell.Tab.0.bottom/0.0.1280.680@0.0.1280.680" timestamp="1605952707224" />
-    <state width="2539" height="391" key="GridCell.Tab.0.bottom/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606321423038" />
-    <state width="2539" height="391" key="GridCell.Tab.0.center" timestamp="1606321423038">
+    <state width="2539" height="391" key="GridCell.Tab.0.bottom/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606333817973" />
+    <state width="2539" height="391" key="GridCell.Tab.0.center" timestamp="1606333817973">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="401" key="GridCell.Tab.0.center/-1600.351.1600.860/2560.357.1280.680/0.0.2560.1400@0.0.2560.1400" timestamp="1605887256052" />
     <state width="1259" height="282" key="GridCell.Tab.0.center/0.0.1280.680@0.0.1280.680" timestamp="1605952707224" />
-    <state width="2539" height="391" key="GridCell.Tab.0.center/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606321423038" />
-    <state width="2539" height="391" key="GridCell.Tab.0.left" timestamp="1606321423038">
+    <state width="2539" height="391" key="GridCell.Tab.0.center/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606333817973" />
+    <state width="2539" height="391" key="GridCell.Tab.0.left" timestamp="1606333817973">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="401" key="GridCell.Tab.0.left/-1600.351.1600.860/2560.357.1280.680/0.0.2560.1400@0.0.2560.1400" timestamp="1605887256051" />
     <state width="1259" height="282" key="GridCell.Tab.0.left/0.0.1280.680@0.0.1280.680" timestamp="1605952707224" />
-    <state width="2539" height="391" key="GridCell.Tab.0.left/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606321423038" />
-    <state width="2539" height="391" key="GridCell.Tab.0.right" timestamp="1606321423038">
+    <state width="2539" height="391" key="GridCell.Tab.0.left/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606333817973" />
+    <state width="2539" height="391" key="GridCell.Tab.0.right" timestamp="1606333817973">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="401" key="GridCell.Tab.0.right/-1600.351.1600.860/2560.357.1280.680/0.0.2560.1400@0.0.2560.1400" timestamp="1605887256052" />
     <state width="1259" height="282" key="GridCell.Tab.0.right/0.0.1280.680@0.0.1280.680" timestamp="1605952707224" />
-    <state width="2539" height="391" key="GridCell.Tab.0.right/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606321423038" />
+    <state width="2539" height="391" key="GridCell.Tab.0.right/2560.357.1280.693/0.0.2560.1400/-1600.351.1600.860@0.0.2560.1400" timestamp="1606333817973" />
     <state width="2539" height="282" key="GridCell.Tab.1.bottom" timestamp="1606066596467">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
@@ -290,8 +293,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ex1_functions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="73" column="14" lean-forward="true" selection-start-line="73" selection-start-column="14" selection-end-line="73" selection-end-column="14" />
+        <state relative-caret-position="-157">
+          <caret line="114" column="35" selection-start-line="114" selection-start-column="35" selection-end-line="114" selection-end-column="35" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

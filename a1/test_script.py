@@ -40,6 +40,7 @@ H_naive = compute_homography_naive(match_p_src, match_p_dst)
 print('Naive Homography {:5.4f} sec'.format(toc(tt)))
 print(H_naive)
 
+
 show_panorama_image(H_naive, img_src, img_dst)
 
 # Test naive homography
