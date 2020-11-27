@@ -174,20 +174,28 @@ def backward_mapping(img_src, img_dst, H):
     src_width_in_panorma = np.ceil(np.max(corners_of_src_in_panorama[:, 0])).astype(np.int)
     src_height_in_panorma = np.ceil(np.max(corners_of_src_in_panorama[:, 1])).astype(np.int)
     points_in_src_in_panorma = repeat_product(np.arange(src_width_in_panorma), np.arange(src_height_in_panorma))
-    points_backwarded_to_source = np.apply_along_axis(backward, 1, points_in_src_in_panorma, H, -dx_minus, -dy_minus)
+    print("Calculating backward mapping...")
+    points_backwarded_to_source = np.apply_along_axis(backward, 1, points_in_src_in_panorma, H, -dx_minus, -dy_minus) # TODO think how to make this faster!
     points_backwarded_to_source = points_backwarded_to_source.reshape(src_height_in_panorma,src_width_in_panorma,3)
     # points_backwarded_to_source : mapping from [x,y] in panorama -> [y,x,1] in source
     im_out_src = np.zeros((panorama_height, panorama_width, 3), dtype=np.uint8)
+    print("Calculating backward interpolation...")
     for p in points_in_src_in_panorma:
         x_in_pan = p[1]
         y_in_pan = p[0]
-        point_in_src = points_backwarded_to_source[y_in_pan, x_in_pan]
+        point_in_src = points_backwarded_to_source[x_in_pan, y_in_pan]
         im_out_src[x_in_pan, y_in_pan, :] = bilinear_inter(img_src, x=point_in_src[1], y=point_in_src[0])
 
+    # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
+    H_offset = np.identity(3, dtype=float)
+    if dx_minus < 0:
+        H_offset[0][2] = -dx_minus
+    if dy_minus < 0:
+        H_offset[1][2] = -dy_minus
     im_out_dst = cv2.warpPerspective(src=img_dst, M=H_offset, dsize=(panorama_width, panorama_height),
                                      flags=cv2.INTER_LINEAR)
 
-    # TODO remove the mean!
+    # TODO remove the mean! jsut take the dest pixels!
     mean_img = cv2.addWeighted(im_out_dst, 0.5, im_out_src, 0.5, 0)
     im_out = np.where(((im_out_src != 0) & (im_out_dst != 0)), mean_img,
                       np.zeros(im_out_dst.shape, dtype=np.int)) + np.where(im_out_src == 0, im_out_dst,
