@@ -6,7 +6,7 @@ import matplotlib as mplot
 import time
 import cv2
 import PIL.Image as Image
-
+np.set_printoptions(suppress=True)
 
 #
 #  Calculate the geometric distance between estimated points and original points
@@ -88,7 +88,6 @@ def compute_homography(mp_src, mp_dst, inliers_percent, max_err):
             break
     return finalH
 
-
 def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping="backward"):
     H = compute_homography(mp_src, mp_dst, inliers_percent, max_err)
 
@@ -116,14 +115,21 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
     # calc the corners of the source image after cast to panaroma coords:
     corners_of_src_in_panorama = corners_src_to_panorama_normalized + np.array([-dx_minus, -dy_minus, 0])
 
+    H_offset = np.identity(3, dtype=float)
+    if dx_minus < 0:
+        H_offset[0][2] = -dx_minus
+    if dy_minus < 0:
+        H_offset[1][2] = -dy_minus
+    M = (np.matmul(H_offset, H))
+
     if mapping=="forward":
         img_out_src = forward_mapping(img_src, H=H, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
     elif mapping=="backward":
-
         print("sainty check:")
         print("original:", corners_3d_src)
-        print("backward calculated:", np.apply_along_axis(backward, 1, corners_of_src_in_panorama, H, -dx_minus, -dy_minus))
-        img_out_src = backward_mapping(img_src, H=H, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus, corners=corners_of_src_in_panorama)
+        print("backward calculated:", backward(corners_of_src_in_panorama, M))
+        #print("backward calculated:", np.apply_along_axis(backward, 1, corners_of_src_in_panorama, H, -dx_minus, -dy_minus))
+        img_out_src = backward_mapping(img_src, H=M, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus, corners=corners_of_src_in_panorama)
     else:
         assert(False)
 
@@ -131,6 +137,7 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
     # TODO should it backward mapped?? i dont think so... we apply only offset
     img_out_dst = forward_mapping(img_dst, H=np.identity(3, dtype=np.uint8), out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
     img_out = np.where(img_out_dst == 0, img_out_src, img_out_dst)
+    # TODO make sure we dont need to use the mean val
     # mean_img = cv2.addWeighted(im_out_dst, 0.5, im_out_src, 0.5, 0)
     # zeros_img = np.zeros(img_out_dst.shape, dtype=np.int)
     # img_out = np.where(((img_out_src != 0) & (img_out_dst != 0)), mean_img, zeros_img) + \
@@ -155,31 +162,11 @@ def forward_mapping(img_src, H, out_width, out_height, x_offset, y_offset):
                                dsize=(out_width, out_height), flags=cv2.INTER_LINEAR)
 
 def backward_mapping(img_src, H, out_width, out_height, x_offset, y_offset, corners):
-    # # 2d corners of dst and src:
-    # corners_dst = np.array([[0, 0], [img_dst.shape[1] - 1, 0], [0, img_dst.shape[0] - 1], [img_dst.shape[1] - 1, img_dst.shape[0] - 1]])
-    # corners_src = np.array([[0, 0], [img_src.shape[1] - 1, 0], [0, img_src.shape[0] - 1], [img_src.shape[1] - 1, img_src.shape[0] - 1]])
-    # # adding the 'z' dim from (x,y) -> (x,y,1) for each corner point:
-    # corners_3d_dst = np.hstack((corners_dst, np.ones((4, 1), dtype=np.int)))
-    # corners_3d_src = np.hstack((corners_src, np.ones((4, 1), dtype=np.int)))
-    # # casting the source corners to the dst coord system using H
-    # corners_src_to_panorama = np.matmul(H, corners_3d_src.T).T
-    # # normalize the (x,y) values of each corner using the z value.
-    # corners_src_to_panorama_normalized = corners_src_to_panorama / corners_src_to_panorama[:, 2].reshape(4, 1)
-    # # deltas of x and y
-    # dx_minus = np.min(np.hstack((corners_src_to_panorama_normalized[:, 0], 0)))
-    # dx_plus = np.max(np.hstack((corners_src_to_panorama_normalized[:, 0], img_dst.shape[1] - 1)))
-    # dy_minus = np.min(np.hstack((corners_src_to_panorama_normalized[:, 1], 0)))
-    # dy_plus = np.max(np.hstack((corners_src_to_panorama_normalized[:, 1], img_dst.shape[0] - 1)))
-    #
-    # # calc the final panorama image dimensions (after the stitching!)
-    # panorama_width = int(dx_plus - dx_minus)
-    # panorama_height = int(dy_plus - dy_minus)
-
     src_width_in_panorma = np.floor(np.max(corners[:, 0])).astype(np.int)
     src_height_in_panorma = np.floor(np.max(corners[:, 1])).astype(np.int)
     points_in_src_in_panorma = repeat_product(np.arange(src_width_in_panorma), np.arange(src_height_in_panorma))
     print("Calculating backward mapping...")
-    points_backwarded_to_source = np.apply_along_axis(backward, 1, points_in_src_in_panorma, H, -x_offset, -y_offset) # TODO think how to make this faster!
+    points_backwarded_to_source = backward(points_in_src_in_panorma, H)
     points_backwarded_to_source = points_backwarded_to_source.reshape(src_height_in_panorma,src_width_in_panorma,3)
     # points_backwarded_to_source : mapping from [x,y] in panorama -> [y,x,1] in source
     im_out_src = np.zeros((out_height, out_width, 3), dtype=np.uint8)
@@ -191,27 +178,14 @@ def backward_mapping(img_src, H, out_width, out_height, x_offset, y_offset, corn
         im_out_src[x_in_pan, y_in_pan, :] = bilinear_inter(img_src, x=point_in_src[1], y=point_in_src[0])
 
     return im_out_src
-    # TODO calc also in backward?
-    # im_out_dst = cv2.warpPerspective(src=img_dst, M=H_offset, dsize=(panorama_width, panorama_height),
-    #                                  flags=cv2.INTER_LINEAR)
-    #
-    # # TODO remove the mean! jsut take the dest pixels!
-    # mean_img = cv2.addWeighted(im_out_dst, 0.5, im_out_src, 0.5, 0)
-    # im_out = np.where(((im_out_src != 0) & (im_out_dst != 0)), mean_img,
-    #                   np.zeros(im_out_dst.shape, dtype=np.int)) + np.where(im_out_src == 0, im_out_dst,
-    #                                                                        np.zeros(im_out_dst.shape,
-    #                                                                                 dtype=np.int)) + np.where(
-    #     im_out_dst == 0, im_out_src, np.zeros(im_out_dst.shape, dtype=np.int))
-    # plt.figure()
-    # plt.imshow(im_out)
 
-def backward(dst, h, dx, dy):
+
+def backward(dst_points, h):
     H_inv = np.linalg.inv(h)
-    offsets = np.array([dx, dy, 0])
-    dst = dst - offsets
-    src = np.matmul(H_inv, dst.T).T
-    src = src / src[2]
-    return src
+    src_points = np.matmul(H_inv, dst_points.T).T
+    number_of_points = dst_points.shape[0]
+    src_points = src_points / src_points[:, 2].reshape(number_of_points,1)
+    return src_points
 
 def repeat_product(x, y):
     points_2d = np.transpose([np.tile(x, len(y)),np.repeat(y, len(x))])
@@ -237,7 +211,7 @@ def bilinear_inter(src, x, y):
     beta_vec = np.array([1 - beta, beta]).T
     interpolate_value = []
     for c in range(src.shape[2]): # TODO vectorize!
-        curr_channel = src[:,:,c]
+        curr_channel = src[:, :, c]
         points_matrix = np.array([
                                     [curr_channel[u, v], curr_channel[u, v+1]],
                                     [curr_channel[u+1, v], curr_channel[u+1, v+1]]
