@@ -138,11 +138,7 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
     #           np.where(img_out_src == 0, img_out_dst, zeros_img) + \
     #           np.where(img_out_src == 0, img_out_dst, zeros_img)
 
-    plt.figure()
-    plt.imshow(img_out)
-    plt.title(str(mapping+" mapping"))
-    plt.axis('off')
-    plt.show()
+    return img_out
 
 def backward_mapping(img_src, H, out_width, out_height, x_offset, y_offset):
     # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
