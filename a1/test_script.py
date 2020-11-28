@@ -41,7 +41,7 @@ print('Naive Homography {:5.4f} sec'.format(toc(tt)))
 print(H_naive)
 
 
-show_panorama_image(H_naive, img_src, img_dst)
+# show_panorama_image(H_naive, img_src, img_dst)
 
 # Test naive homography
 tt = time.time()
@@ -55,7 +55,7 @@ H_ransac = compute_homography(match_p_src, match_p_dst, inliers_percent, max_err
 print('RANSAC Homography {:5.4f} sec'.format(toc(tt)))
 print(H_ransac)
 
-show_panorama_image(H_ransac, img_src, img_dst)
+# show_panorama_image(H_ransac, img_src, img_dst)
 
 # Test RANSAC homography
 tt = tic()

@@ -130,7 +130,7 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
         assert(False)
 
     img_out_dst = backward_mapping(img_dst, H=np.identity(3, dtype=np.uint8), out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
-    img_out = np.where(img_out_dst == 0, img_out_src, img_out_dst)
+    img_out = np.where(img_out_dst.round() == 0, img_out_src, img_out_dst)
     # TODO make sure we dont need to use the mean val
     # mean_img = cv2.addWeighted(im_out_dst, 0.5, im_out_src, 0.5, 0)
     # zeros_img = np.zeros(img_out_dst.shape, dtype=np.int)
