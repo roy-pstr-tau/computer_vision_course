@@ -123,19 +123,13 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
     M = (np.matmul(H_offset, H))
 
     if mapping=="forward":
-        img_out_src = forward_mapping(img_src, H=H, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
+        img_out_src = forward_mapping(img_src, H=H, out_width=panorama_width, out_height=panorama_height)
     elif mapping=="backward":
-        print("sainty check:")
-        print("original:", corners_3d_src)
-        print("backward calculated:", backward(corners_of_src_in_panorama, M))
-        #print("backward calculated:", np.apply_along_axis(backward, 1, corners_of_src_in_panorama, H, -dx_minus, -dy_minus))
-        img_out_src = backward_mapping(img_src, H=M, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus, corners=corners_of_src_in_panorama)
+        img_out_src = backward_mapping(img_src, H=H, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
     else:
         assert(False)
 
-    #img_out_dst = cv2.warpPerspective(src=img_dst, M=H_offset, dsize=(panorama_width, panorama_height), flags=cv2.INTER_LINEAR)
-    # TODO should it backward mapped?? i dont think so... we apply only offset
-    img_out_dst = forward_mapping(img_dst, H=np.identity(3, dtype=np.uint8), out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
+    img_out_dst = backward_mapping(img_dst, H=np.identity(3, dtype=np.uint8), out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
     img_out = np.where(img_out_dst == 0, img_out_src, img_out_dst)
     # TODO make sure we dont need to use the mean val
     # mean_img = cv2.addWeighted(im_out_dst, 0.5, im_out_src, 0.5, 0)
@@ -150,7 +144,7 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
     plt.axis('off')
     plt.show()
 
-def forward_mapping(img_src, H, out_width, out_height, x_offset, y_offset):
+def backward_mapping(img_src, H, out_width, out_height, x_offset, y_offset):
     # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
     H_offset = np.identity(3, dtype=float)
     if x_offset < 0:
@@ -161,31 +155,69 @@ def forward_mapping(img_src, H, out_width, out_height, x_offset, y_offset):
     return cv2.warpPerspective(src=img_src, M=(np.matmul(H_offset, np.float32(H))),
                                dsize=(out_width, out_height), flags=cv2.INTER_LINEAR)
 
-def backward_mapping(img_src, H, out_width, out_height, x_offset, y_offset, corners):
-    src_width_in_panorma = np.floor(np.max(corners[:, 0])).astype(np.int)
-    src_height_in_panorma = np.floor(np.max(corners[:, 1])).astype(np.int)
-    points_in_src_in_panorma = repeat_product(np.arange(src_width_in_panorma), np.arange(src_height_in_panorma))
-    print("Calculating backward mapping...")
-    points_backwarded_to_source = backward(points_in_src_in_panorma, H)
-    points_backwarded_to_source = points_backwarded_to_source.reshape(src_height_in_panorma,src_width_in_panorma,3)
-    # points_backwarded_to_source : mapping from [x,y] in panorama -> [y,x,1] in source
+def forward_mapping(img_src, H, out_width, out_height):
+    points_in_src_in_panorma = repeat_product(np.arange(img_src.shape[1]), np.arange(img_src.shape[0]))
+    points_forwarded_to_mapped_source = forward(points_in_src_in_panorma, H)
+    points_forwarded_to_mapped_source = points_forwarded_to_mapped_source.reshape(img_src.shape[0], img_src.shape[1], 3)
+
+    # points_forwarded_to_mapped_source : mapping from [x,y] in panorama -> [y,x,1] in source
     im_out_src = np.zeros((out_height, out_width, 3), dtype=np.uint8)
-    print("Calculating backward interpolation...")
     for p in points_in_src_in_panorma:
         x_in_pan = p[1]
         y_in_pan = p[0]
-        point_in_src = points_backwarded_to_source[x_in_pan, y_in_pan]
-        im_out_src[x_in_pan, y_in_pan, :] = bilinear_inter(img_src, x=point_in_src[1], y=point_in_src[0])
-
+        points_in_mapped_src = points_forwarded_to_mapped_source[x_in_pan, y_in_pan]
+        if 0 <= points_in_mapped_src[0] < im_out_src.shape[1] and 0 <= points_in_mapped_src[1] < im_out_src.shape[0]:
+            im_out_src[points_in_mapped_src[1], points_in_mapped_src[0]] = img_src[x_in_pan, y_in_pan]
     return im_out_src
 
 
-def backward(dst_points, h):
-    H_inv = np.linalg.inv(h)
-    src_points = np.matmul(H_inv, dst_points.T).T
-    number_of_points = dst_points.shape[0]
-    src_points = src_points / src_points[:, 2].reshape(number_of_points,1)
-    return src_points
+def forward(src_points, h):
+    mapped_src_points = np.matmul(h, src_points.T).T
+    number_of_points = mapped_src_points.shape[0]
+    mapped_src_points = mapped_src_points / mapped_src_points[:, 2].reshape(number_of_points,1)
+    return mapped_src_points.round().astype(int)
+
+
+def show_panorama_image(H, img_src, img_dst):
+    # 2d corners of src:
+    corners_src = np.array([[0, 0], [img_src.shape[1] - 1, 0], [0, img_src.shape[0] - 1], [img_src.shape[1] - 1, img_src.shape[0] - 1]])
+    # adding the 'z' dim from (x,y) -> (x,y,1) for each corner point:
+    corners_3d_src = np.hstack((corners_src, np.ones((4, 1), dtype=np.int)))
+    # casting the source corners to the dst coord system using H
+    corners_src_to_panorama = np.matmul(H, corners_3d_src.T).T
+    # normalize the (x,y) values of each corner using the z value.
+    corners_src_to_panorama_normalized = corners_src_to_panorama/corners_src_to_panorama[:,2].reshape(4,1)
+
+    # deltas of x and y
+    dx_minus = np.min(np.hstack((corners_src_to_panorama_normalized[:, 0], 0)))
+    dx_plus = np.max(np.hstack((corners_src_to_panorama_normalized[:, 0], img_dst.shape[1] - 1)))
+    dy_minus = np.min(np.hstack((corners_src_to_panorama_normalized[:, 1], 0)))
+    dy_plus = np.max(np.hstack((corners_src_to_panorama_normalized[:, 1], img_dst.shape[0] - 1)))
+
+    # calc the final panorama image dimensions (after the stitching!)
+    panorama_width = int(dx_plus - dx_minus)
+    panorama_height = int(dy_plus - dy_minus)
+
+    # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
+    H_offset = np.identity(3, dtype=float)
+    if dx_minus < 0:
+        H_offset[0][2] = -dx_minus
+    if dy_minus < 0:
+        H_offset[1][2] = -dy_minus
+
+    # cast source and dst images to the panorama image plane:
+    #im_out_src = cv2.warpPerspective(src=img_src, M=(np.matmul(H_offset, np.float32(H))),
+    #                                 dsize=(panorama_width, panorama_height), flags=cv2.INTER_LINEAR)
+    im_out_src = forward_mapping(img_src, (np.matmul(H_offset, np.float32(H))), panorama_width, panorama_height)
+    plt.figure()
+    plt.imshow(im_out_src)
+
+    plt.axis('off')
+    plt.show()
+    return
+
+
+
 
 def repeat_product(x, y):
     points_2d = np.transpose([np.tile(x, len(y)),np.repeat(y, len(x))])
@@ -220,53 +252,3 @@ def bilinear_inter(src, x, y):
         interpolate_value.append(np.matmul(alpha_vec,np.matmul(points_matrix, beta_vec)))
 
     return np.array(interpolate_value, dtype=np.uint8)
-
-def show_panorama_image(H, img_src, img_dst):
-    # 2d corners of dst and src:
-    corners_dst = np.array([[0, 0], [img_dst.shape[1] - 1, 0], [0, img_dst.shape[0] - 1], [img_dst.shape[1] - 1, img_dst.shape[0] - 1]])
-    corners_src = np.array([[0, 0], [img_src.shape[1] - 1, 0], [0, img_src.shape[0] - 1], [img_src.shape[1] - 1, img_src.shape[0] - 1]])
-    # adding the 'z' dim from (x,y) -> (x,y,1) for each corner point:
-    corners_3d_dst = np.hstack((corners_dst, np.ones((4, 1), dtype=np.int)))
-    corners_3d_src = np.hstack((corners_src, np.ones((4, 1), dtype=np.int)))
-    # casting the source corners to the dst coord system using H
-    corners_src_to_panorama = np.matmul(H, corners_3d_src.T).T
-    # normalize the (x,y) values of each corner using the z value.
-    corners_src_to_panorama_normalized = corners_src_to_panorama/corners_src_to_panorama[:,2].reshape(4,1)
-
-    # deltas of x and y
-    dx_minus = np.min(np.hstack((corners_src_to_panorama_normalized[:, 0], 0)))
-    dx_plus = np.max(np.hstack((corners_src_to_panorama_normalized[:, 0], img_dst.shape[1] - 1)))
-    dy_minus = np.min(np.hstack((corners_src_to_panorama_normalized[:, 1], 0)))
-    dy_plus = np.max(np.hstack((corners_src_to_panorama_normalized[:, 1], img_dst.shape[0] - 1)))
-
-    # calc the final panorama image dimensions (after the stitching!)
-    panorama_width = int(dx_plus - dx_minus)
-    panorama_height = int(dy_plus - dy_minus)
-
-    # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
-    H_offset = np.identity(3, dtype=float)
-    if dx_minus < 0:
-        H_offset[0][2] = -dx_minus
-    if dy_minus < 0:
-        H_offset[1][2] = -dy_minus
-
-    # cast source and dst images to the panorama image plane:
-    im_out_src = cv2.warpPerspective(src=img_src, M=(np.matmul(H_offset, np.float32(H))),
-                                     dsize=(panorama_width, panorama_height), flags=cv2.INTER_LINEAR)
-    im_out_dst = cv2.warpPerspective(src=img_dst, M=H_offset, dsize=(panorama_width, panorama_height), flags=cv2.INTER_LINEAR)
-
-    # choosing the pixels from the source image only where the dst image pixels are zero! that our way of stitching.
-    im_out = np.where(im_out_dst == 0, im_out_src, im_out_dst)
-    # mean_img = cv2.addWeighted(im_out_dst, 0.5, im_out_src, 0.5, 0)
-    # im_out = np.where(((im_out_src != 0) & (im_out_dst != 0)), mean_img,
-    #                   np.zeros(im_out_dst.shape, dtype=np.int)) + np.where(im_out_src == 0, im_out_dst,
-    #                                                                        np.zeros(im_out_dst.shape,
-    #                                                                                 dtype=np.int)) + np.where(
-    #     im_out_dst == 0, im_out_src, np.zeros(im_out_dst.shape, dtype=np.int))
-    # # im_out = im_out_dst + im_out_src
-    plt.figure()
-    plt.imshow(im_out)
-
-    plt.axis('off')
-    plt.show()
-    return
