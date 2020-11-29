@@ -88,6 +88,7 @@ def compute_homography(mp_src, mp_dst, inliers_percent, max_err):
             break
     return finalH
 
+
 def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping="backward"):
     H = compute_homography(mp_src, mp_dst, inliers_percent, max_err)
 
@@ -112,44 +113,35 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
     panorama_width = int(dx_plus - dx_minus)
     panorama_height = int(dy_plus - dy_minus)
 
-    # calc the corners of the source image after cast to panaroma coords:
-    corners_of_src_in_panorama = corners_src_to_panorama_normalized + np.array([-dx_minus, -dy_minus, 0])
-
     H_offset = np.identity(3, dtype=float)
     if dx_minus < 0:
         H_offset[0][2] = -dx_minus
     if dy_minus < 0:
         H_offset[1][2] = -dy_minus
-    M = (np.matmul(H_offset, H))
+    M=np.matmul(H_offset, H).astype(np.float32)
 
     if mapping=="forward":
-        img_out_src = forward_mapping(img_src, H=H, out_width=panorama_width, out_height=panorama_height)
+        img_out_src = forward_mapping(img_src, H=M, out_width=panorama_width, out_height=panorama_height)
     elif mapping=="backward":
-        img_out_src = backward_mapping(img_src, H=H, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
+        img_out_src = backward_mapping(img_src, H=M, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
     else:
         assert(False)
 
-    img_out_dst = backward_mapping(img_dst, H=np.identity(3, dtype=np.uint8), out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
+    img_out_dst = backward_mapping(img_dst, H=H_offset, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
     img_out = np.where(img_out_dst.round() == 0, img_out_src, img_out_dst)
-    # TODO make sure we dont need to use the mean val
-    # mean_img = cv2.addWeighted(im_out_dst, 0.5, im_out_src, 0.5, 0)
-    # zeros_img = np.zeros(img_out_dst.shape, dtype=np.int)
-    # img_out = np.where(((img_out_src != 0) & (img_out_dst != 0)), mean_img, zeros_img) + \
-    #           np.where(img_out_src == 0, img_out_dst, zeros_img) + \
-    #           np.where(img_out_src == 0, img_out_dst, zeros_img)
-
     return img_out
 
-def backward_mapping(img_src, H, out_width, out_height, x_offset, y_offset):
-    # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
-    H_offset = np.identity(3, dtype=float)
-    if x_offset < 0:
-        H_offset[0][2] = -x_offset
-    if y_offset < 0:
-        H_offset[1][2] = -y_offset
 
-    return cv2.warpPerspective(src=img_src, M=(np.matmul(H_offset, np.float32(H))),
-                               dsize=(out_width, out_height), flags=cv2.INTER_LINEAR)
+def backward_mapping(img_src, H, out_width, out_height):
+    # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
+    # H_offset = np.identity(3, dtype=float)
+    # if x_offset < 0:
+    #     H_offset[0][2] = -x_offset
+    # if y_offset < 0:
+    #     H_offset[1][2] = -y_offset
+
+    return cv2.warpPerspective(src=img_src, M=H, dsize=(out_width, out_height), flags=cv2.INTER_LINEAR)
+
 
 def forward_mapping(img_src, H, out_width, out_height):
     points_in_src_in_panorma = repeat_product(np.arange(img_src.shape[1]), np.arange(img_src.shape[0]))
@@ -213,38 +205,8 @@ def show_panorama_image(H, img_src, img_dst):
     return
 
 
-
-
 def repeat_product(x, y):
     points_2d = np.transpose([np.tile(x, len(y)),np.repeat(y, len(x))])
     return np.hstack((points_2d, np.ones((points_2d.shape[0], 1), dtype=np.int)))
 
-def bilinear_inter(src, x, y):
-    '''
 
-    :param src: image
-    :param x: float pixel index
-    :param y: float pixel index
-    :return: bilinear interpolation of the pixels: [(u,v), (u+1,v),(u,v+1),(u+1,v+1)] where u = floor(x), v = floor(u)
-    '''
-    if x < 0 or y < 0:
-        return np.zeros((3,), dtype=np.uint8)
-    if np.ceil(x) >= src.shape[0] or np.ceil(y) >= src.shape[1]:
-        return np.zeros((3,), dtype=np.uint8)
-    u = np.floor(x).astype(np.int)
-    v = np.floor(y).astype(np.int)
-    alpha = x-u
-    beta = y-v
-    alpha_vec = np.array([1 - alpha, alpha])
-    beta_vec = np.array([1 - beta, beta]).T
-    interpolate_value = []
-    for c in range(src.shape[2]): # TODO vectorize!
-        curr_channel = src[:, :, c]
-        points_matrix = np.array([
-                                    [curr_channel[u, v], curr_channel[u, v+1]],
-                                    [curr_channel[u+1, v], curr_channel[u+1, v+1]]
-                                ])
-
-        interpolate_value.append(np.matmul(alpha_vec,np.matmul(points_matrix, beta_vec)))
-
-    return np.array(interpolate_value, dtype=np.uint8)
