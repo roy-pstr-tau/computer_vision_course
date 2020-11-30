@@ -29,8 +29,8 @@ inliers_percent = 0.8
 # Read the data:
 img_src = mpimg.imread('src.jpg')
 img_dst = mpimg.imread('dst.jpg')
-matches = scipy.io.loadmat('matches') #matching points and some outliers
-# matches = scipy.io.loadmat('matches_perfect')  # loading perfect matches
+# matches = scipy.io.loadmat('matches') #matching points and some outliers
+matches = scipy.io.loadmat('matches_perfect')  # loading perfect matches
 match_p_dst = matches['match_p_dst'].astype(float)
 match_p_src = matches['match_p_src'].astype(float)
 
