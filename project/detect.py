@@ -62,7 +62,7 @@ def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in classes]
 
      # Create Annotation File
-    f = open(myAnnFileName, "x")
+    f = open(myAnnFileName, "w+")
 
     for path, img, img_original, _ in dataset:
         img = torch.from_numpy(img).to(device)
