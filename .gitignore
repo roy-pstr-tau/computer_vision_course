@@ -4,4 +4,5 @@ a1/.idea/
 *.pt
 *.pth
 *.txt
+!annotationsTrain.txt
 *.jpg
