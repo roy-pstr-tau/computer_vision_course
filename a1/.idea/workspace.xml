@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="76da6c0d-4c43-4ced-a344-806dda0c68de" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Assignment 1 - final by pstr.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex1_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1_functions.py" afterDir="false" />
-    </list>
+    <list default="true" id="76da6c0d-4c43-4ced-a344-806dda0c68de" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,8 +12,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ex1_functions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="106">
-              <caret line="211" selection-start-line="211" selection-end-line="211" />
+            <state relative-caret-position="123">
+              <caret line="212" lean-forward="true" selection-start-line="212" selection-end-line="212" />
               <folding>
                 <element signature="e#166#167#0" />
                 <element signature="e#296#623#0" />
@@ -307,8 +303,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ex1_functions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="106">
-          <caret line="211" selection-start-line="211" selection-end-line="211" />
+        <state relative-caret-position="123">
+          <caret line="212" lean-forward="true" selection-start-line="212" selection-end-line="212" />
           <folding>
             <element signature="e#166#167#0" />
             <element signature="e#296#623#0" />

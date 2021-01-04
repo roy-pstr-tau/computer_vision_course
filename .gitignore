@@ -1,3 +1,7 @@
 .idea
 .pyc
 a1/.idea/
+*.pt
+*.pth
+*.txt
+*.jpg
