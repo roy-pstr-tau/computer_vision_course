@@ -7,11 +7,11 @@ import numpy as np
 from torchvision import  transforms
 from PIL import Image
 
-from yolo.models.experimental import attempt_load
-from yolo.utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, increment_path
-from yolo.utils.torch_utils import select_device
-from yolo.utils.datasets import LoadImages
-from yolo.utils.plots import plot_one_box
+from models.experimental import attempt_load
+from utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, increment_path
+from utils.torch_utils import select_device
+from utils.datasets import LoadImages
+from utils.plots import plot_one_box
 from our_utils import crop, yolo_to_ours_label
 
 test_transforms = transforms.Compose([transforms.Resize(224), transforms.ToTensor()])
@@ -41,7 +41,7 @@ def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
     # Load bus detector model:
-    model = attempt_load(weights, map_location=device)  # load FP32 model
+    model = attempt_load(detection_weights, map_location=device)  # load FP32 model
     imgsz = check_img_size(imgsz, s=model.stride.max())  # check img_size TODO check this limitation!
     
 

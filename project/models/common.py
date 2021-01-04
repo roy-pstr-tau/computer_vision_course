@@ -6,9 +6,9 @@ import torch
 import torch.nn as nn
 from PIL import Image, ImageDraw
 
-from yolo.utils.datasets import letterbox
-from yolo.utils.general import non_max_suppression, make_divisible, scale_coords, xyxy2xywh
-from yolo.utils.plots import color_list
+from utils.datasets import letterbox
+from utils.general import non_max_suppression, make_divisible, scale_coords, xyxy2xywh
+from utils.plots import color_list
 
 
 def autopad(k, p=None):  # kernel, padding
