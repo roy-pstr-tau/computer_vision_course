@@ -26,7 +26,7 @@ def color_classification(img, xywh, model, device, save_path):
         img = img.unsqueeze_(0)
     return model(img.to(device).half()).argmax(1)
 
-def detect(source, weights, imgsz, classifier_weights):
+def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
     t0 = time.time()
     save_txt = True
     save_img = True
@@ -62,8 +62,7 @@ def detect(source, weights, imgsz, classifier_weights):
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in classes]
 
      # Create Annotation File
-    annotation_file="outputAnnot.txt"
-    f = open(annotation_file, "x")
+    f = open(myAnnFileName, "x")
 
     for path, img, img_original, _ in dataset:
         img = torch.from_numpy(img).to(device)
