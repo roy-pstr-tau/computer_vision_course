@@ -1,15 +1,15 @@
+#   ex1_functions
+#   Roy Pasternak and Shany Amir
+#   ids: 204219273  312545965
+#
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.io
 import random as rnd
-import matplotlib as mplot
-import time
 import cv2
-import PIL.Image as Image
 np.set_printoptions(suppress=True)
 
-#
-#  Calculate the geometric distance between estimated points and original points
+#   geometricDistance
+#   Calculate the geometric distance between estimated points and original points
 
 def geometricDistance(correspondence, h):
     p1 = np.transpose(np.matrix([correspondence[0].item(0), correspondence[0].item(1), 1]))
@@ -20,6 +20,9 @@ def geometricDistance(correspondence, h):
     error = p2 - estimatep2
     return np.linalg.norm(error)
 
+#   compute_homography_naive
+#   return a 3x3 homography matrix
+#   no dealing with outliers
 
 def compute_homography_naive(mp_src, mp_dst):
     eq_system = []
@@ -47,6 +50,9 @@ def compute_homography_naive(mp_src, mp_dst):
     return np.asarray(H)
 
 
+#   test_homography
+#   return number of inliers precent and mse calc between the mapped points to the destination points
+
 def test_homography(H, mp_src, mp_dst, max_err):
     im_out = np.ndarray((mp_src.shape[0], mp_src.shape[1])).reshape(-1, 1, 2)
     cv2.perspectiveTransform(np.transpose(mp_src).reshape(-1, 1, 2), H, im_out)
@@ -58,6 +64,9 @@ def test_homography(H, mp_src, mp_dst, max_err):
                         i < max_err])  # Mean square error of the distances between validly mapped src points, to their corresponding dst points (only for inliers).
     return fit_percent, dist_mse
 
+#   compute_homography
+#   return a 3x3 homography matrix
+#   dealing with outliers using RANSAC algorithm
 
 def compute_homography(mp_src, mp_dst, inliers_percent, max_err):
     maxInliers = []
@@ -88,6 +97,10 @@ def compute_homography(mp_src, mp_dst, inliers_percent, max_err):
             break
     return finalH
 
+#   panorama
+#   return panoramic image of 2 input images and their matching points
+#   using RANSAC to deal with outliers
+#   using backwards mapping (can be change to forward)
 
 def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping="backward"):
     H = compute_homography(mp_src, mp_dst, inliers_percent, max_err)
@@ -123,25 +136,23 @@ def panorama(img_src, img_dst, mp_src, mp_dst, inliers_percent, max_err, mapping
     if mapping=="forward":
         img_out_src = forward_mapping(img_src, H=M, out_width=panorama_width, out_height=panorama_height)
     elif mapping=="backward":
-        img_out_src = backward_mapping(img_src, H=M, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
+        img_out_src = backward_mapping(img_src, H=M, out_width=panorama_width, out_height=panorama_height)
     else:
         assert(False)
 
-    img_out_dst = backward_mapping(img_dst, H=H_offset, out_width=panorama_width, out_height=panorama_height, x_offset=dx_minus, y_offset=dy_minus)
+    img_out_dst = backward_mapping(img_dst, H=H_offset, out_width=panorama_width, out_height=panorama_height)
     img_out = np.where(img_out_dst.round() == 0, img_out_src, img_out_dst)
     return img_out
 
+#   backward_mapping
+#   maps the src image according to 3x3 homography matrix
+#   backward mapping using bilinear interpolation
 
 def backward_mapping(img_src, H, out_width, out_height):
-    # calc the offset matrix, two possible offsets which are dx_minus and dy_minus
-    # H_offset = np.identity(3, dtype=float)
-    # if x_offset < 0:
-    #     H_offset[0][2] = -x_offset
-    # if y_offset < 0:
-    #     H_offset[1][2] = -y_offset
-
     return cv2.warpPerspective(src=img_src, M=H, dsize=(out_width, out_height), flags=cv2.INTER_LINEAR)
 
+#   forward_mapping
+#   forward mapping the src image according to 3x3 homography matrix
 
 def forward_mapping(img_src, H, out_width, out_height):
     points_in_src_in_panorma = repeat_product(np.arange(img_src.shape[1]), np.arange(img_src.shape[0]))
@@ -158,6 +169,8 @@ def forward_mapping(img_src, H, out_width, out_height):
             im_out_src[points_in_mapped_src[1], points_in_mapped_src[0]] = img_src[x_in_pan, y_in_pan]
     return im_out_src
 
+#   forward
+#   calculates H*src_point
 
 def forward(src_points, h):
     mapped_src_points = np.matmul(h, src_points.T).T
@@ -165,6 +178,8 @@ def forward(src_points, h):
     mapped_src_points = mapped_src_points / mapped_src_points[:, 2].reshape(number_of_points,1)
     return mapped_src_points.round().astype(int)
 
+#   show_panorama_image
+#   for our use, used to display src image after forward mapping with 3x3 Homography martix
 
 def show_panorama_image(H, img_src, img_dst):
     # 2d corners of src:
@@ -196,7 +211,7 @@ def show_panorama_image(H, img_src, img_dst):
     # cast source and dst images to the panorama image plane:
     #im_out_src = cv2.warpPerspective(src=img_src, M=(np.matmul(H_offset, np.float32(H))),
     #                                 dsize=(panorama_width, panorama_height), flags=cv2.INTER_LINEAR)
-    im_out_src = forward_mapping(img_src, (np.matmul(H_offset, np.float32(H))), panorama_width, panorama_height)
+    im_out_src = forward_mapping(img_src, (np.matmul(H_offset, H).astype(np.float32)), panorama_width, panorama_height)
     plt.figure()
     plt.imshow(im_out_src)
 
@@ -204,6 +219,8 @@ def show_panorama_image(H, img_src, img_dst):
     plt.show()
     return
 
+#   repeat_product
+#   rearrange (x, y) points in a column
 
 def repeat_product(x, y):
     points_2d = np.transpose([np.tile(x, len(y)),np.repeat(y, len(x))])
