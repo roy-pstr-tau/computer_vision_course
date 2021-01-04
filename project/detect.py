@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torchvision import  transforms
 from PIL import Image
-
+import torch
 from models.experimental import attempt_load
 from utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, increment_path
 from utils.torch_utils import select_device
