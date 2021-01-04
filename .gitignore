@@ -5,4 +5,5 @@ a1/.idea/
 *.pth
 *.txt
 !annotationsTrain.txt
+!requirements.txt
 *.jpg
