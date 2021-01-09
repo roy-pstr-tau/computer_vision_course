@@ -9,6 +9,6 @@ def run(myAnnFileName, buses):
         classifier_weights = os.path.join(os.getcwd(), 'weights/classifier_weights.pth')
         detect( source=source,
                 detection_weights=detection_weights,
-                imgsz=480,
+                imgsz=416,
                 classifier_weights=classifier_weights,
                 myAnnFileName=myAnnFileName)
