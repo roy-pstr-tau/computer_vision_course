@@ -66,6 +66,7 @@ def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
     f = open(myAnnFileName, "w+")
 
     for path, img, img_original, _ in dataset:
+        t_img = time.time()
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -129,8 +130,9 @@ def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
             # Save results (image with detections)
             if save_img:
                 cv2.imwrite(save_path, output_image)
-
+        
         f.write("\n")
+        print('Time to process: (%.3fs)' % (time.time() - t_img))
 
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
