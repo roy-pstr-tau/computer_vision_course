@@ -104,7 +104,7 @@ def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         color_cls = color_classification(img=im0, xywh=xywh, model=cmodel, device=device, save_path=str(save_dir / "cropped"/f"{p.stem}_{j}.jpg"))
-                        print(classes[color_cls])
+                        print(classes[color_cls], end=', ')
                         line = (color_cls, *xywh)  # label format
                         # with open(txt_path + '.txt', 'a') as f:
                         #     f.write(('%g ' * len(line)).rstrip() % line + '\n')
