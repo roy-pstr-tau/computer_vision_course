@@ -77,7 +77,7 @@ def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
         pred = model(img)[0]
         #print(pred.shape)
         # Apply NMS
-        pred = non_max_suppression(pred, conf_thres=0.25, iou_thres=0.7)
+        pred = non_max_suppression(pred, conf_thres=0.25, iou_thres=0.45)
         #print(pred[0].shape)
         # Process detections
         output_image = np.copy(img_original)
