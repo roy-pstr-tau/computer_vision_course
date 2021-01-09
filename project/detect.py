@@ -19,8 +19,9 @@ def color_classification(img, xywh, model, device, save_path):
     cropped_img = crop(img, *xywh)
     #print(cropped_img.shape)
     #img = transforms.functional.to_pil_image(cropped_img) # this one does not works well...
-    cv2.imwrite( save_path, cropped_img) # we need to figure a way to skip the save and load....
-    img = Image.open(save_path) 
+    #cv2.imwrite( save_path, cropped_img) # we need to figure a way to skip the save and load....
+    #img = Image.open(save_path) 
+    img = Image.fromarray( cv2.cvtColor(cropped_img, cv2.COLOR_BGR2RGB))
     img = test_transforms(img)
     if img.ndimension() == 3:
         img = img.unsqueeze_(0)
@@ -75,7 +76,7 @@ def detect(source, detection_weights, imgsz, classifier_weights, myAnnFileName):
         pred = model(img)[0]
         #print(pred.shape)
         # Apply NMS
-        pred = non_max_suppression(pred, conf_thres=0.25, iou_thres=0.45)
+        pred = non_max_suppression(pred, conf_thres=0.25, iou_thres=0.7)
         #print(pred[0].shape)
         # Process detections
         output_image = np.copy(img_original)
